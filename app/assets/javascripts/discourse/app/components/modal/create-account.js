@@ -216,7 +216,8 @@ export default class CreateAccount extends Component.extend(
       );
     }
 
-    if (rejectedEmails.includes(email) || !emailValid(email)) {
+    // The server strips surrounding whitespace, so validate the trimmed value
+    if (rejectedEmails.includes(email) || !emailValid(email.trim())) {
       return EmberObject.create(
         Object.assign(failedAttrs, {
           reason: I18n.t("user.email.invalid"),
