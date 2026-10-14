@@ -46,7 +46,7 @@
                 disabled={{this.emailDisabled}}
                 autofocus="autofocus"
                 aria-describedby="account-email-validation"
-                aria-invalid={{this.emailValidation.failed}}
+                aria-invalid={{if this.emailValidation.failed "true"}}
                 name="email"
                 id="new-account-email"
                 class={{value-entered this.model.accountEmail}}
@@ -60,6 +60,7 @@
               <InputTip
                 @validation={{this.emailValidation}}
                 @id="account-email-validation"
+                aria-live="polite"
               />
               <span class="more-info">{{i18n "user.email.instructions"}}</span>
             </div>
@@ -70,7 +71,7 @@
                 disabled={{this.usernameDisabled}}
                 maxlength={{this.maxUsernameLength}}
                 aria-describedby="username-validation"
-                aria-invalid={{this.usernameValidation.failed}}
+                aria-invalid={{if this.usernameValidation.failed "true"}}
                 autocomplete="off"
                 name="username"
                 id="new-account-username"
@@ -100,7 +101,7 @@
                   @id="new-account-name"
                   @class={{value-entered this.model.accountName}}
                   aria-describedby="fullname-validation"
-                  aria-invalid={{this.nameValidation.failed}}
+                  aria-invalid={{if this.nameValidation.failed "true"}}
                 />
                 <label class="alt-placeholder" for="new-account-name">
                   {{i18n "user.name.title"}}
@@ -139,7 +140,7 @@
                   @autocomplete="current-password"
                   @capsLockOn={{this.capsLockOn}}
                   aria-describedby="password-validation"
-                  aria-invalid={{this.passwordValidation.failed}}
+                  aria-invalid={{if this.passwordValidation.failed "true"}}
                   id="new-account-password"
                 />
                 <label class="alt-placeholder" for="new-account-password">

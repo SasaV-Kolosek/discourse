@@ -1,4 +1,4 @@
-import { click, fillIn, visit } from "@ember/test-helpers";
+import { click, fillIn, triggerEvent, visit } from "@ember/test-helpers";
 import { test } from "qunit";
 import sinon from "sinon";
 import LoginMethod from "discourse/models/login-method";
@@ -64,6 +64,56 @@ acceptance("Create Account", function () {
     assert
       .dom("#username-validation")
       .hasText(I18n.t("user.username.required"), "shows signup error");
+    assert.dom("#new-account-username").hasAttribute("aria-invalid", "true");
+  });
+
+  test("validate email", async function (assert) {
+    await visit("/");
+    await click("header .sign-up-button");
+
+    await click(".modal-footer .btn-primary");
+    assert
+      .dom("#account-email-validation")
+      .hasText(I18n.t("user.email.required"), "shows required email error");
+    assert.dom("#new-account-email").hasAttribute("aria-invalid", "true");
+    assert
+      .dom("#account-email-validation")
+      .hasAttribute("aria-live", "polite", "announces email errors");
+
+    await fillIn("#new-account-email", "not-an-email");
+    assert
+      .dom("#account-email-validation.bad")
+      .hasText(
+        I18n.t("user.email.invalid"),
+        "shows invalid email format error"
+      );
+
+    await fillIn("#new-account-email", "missing@tld");
+    assert
+      .dom("#account-email-validation.bad")
+      .hasText(I18n.t("user.email.invalid"), "requires a domain with a TLD");
+
+    await fillIn("#new-account-email", "good.tuna@test.com");
+    assert
+      .dom("#account-email-validation.good")
+      .hasText(I18n.t("user.email.ok"), "accepts a valid email");
+    assert.dom("#new-account-email").doesNotHaveAttribute("aria-invalid");
+  });
+
+  test("shows server-side email validation errors", async function (assert) {
+    pretender.get("/u/check_email", () =>
+      response({ failed: "FAILED", errors: ["Email is not allowed."] })
+    );
+
+    await visit("/");
+    await click("header .sign-up-button");
+
+    await fillIn("#new-account-email", "blocked@example.com");
+    await triggerEvent("#new-account-email", "focusout");
+
+    assert
+      .dom("#account-email-validation.bad")
+      .hasText("Email is not allowed.", "shows the server error");
   });
 
   test("can sign in using a third-party auth", async function (assert) {
