@@ -66,6 +66,29 @@ acceptance("Create Account", function () {
       .hasText(I18n.t("user.username.required"), "shows signup error");
   });
 
+  test("validate email", async function (assert) {
+    await visit("/");
+    await click("header .sign-up-button");
+
+    await click(".modal-footer .btn-primary");
+    assert
+      .dom("#account-email-validation")
+      .hasText(I18n.t("user.email.required"), "shows required error");
+
+    await fillIn("#new-account-email", "not-an-email");
+    assert
+      .dom("#account-email-validation.bad")
+      .hasText(I18n.t("user.email.invalid"), "shows invalid format error");
+    assert
+      .dom("#new-account-email")
+      .hasAttribute("aria-invalid", "true", "marks the field as invalid");
+
+    await fillIn("#new-account-email", "good.tuna@test.com");
+    assert
+      .dom("#account-email-validation.good")
+      .hasText(I18n.t("user.email.ok"), "shows valid email message");
+  });
+
   test("can sign in using a third-party auth", async function (assert) {
     sinon.stub(LoginMethod, "buildPostForm").callsFake((url) => {
       assert.step("buildPostForm");

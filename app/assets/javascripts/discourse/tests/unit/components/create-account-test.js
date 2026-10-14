@@ -90,6 +90,66 @@ module("Unit | Component | create-account", function (hooks) {
     await settled();
   });
 
+  test("emailValidation", async function (assert) {
+    const component = this.owner
+      .factoryFor("component:modal/create-account")
+      .create({ model: { accountEmail: "" } });
+
+    assert.true(component.emailValidation.failed, "blank email is invalid");
+    assert.strictEqual(
+      component.emailValidation.reason,
+      null,
+      "blank email has no reason until validation is forced"
+    );
+
+    component.set("forceValidationReason", true);
+    assert.strictEqual(
+      component.emailValidation.reason,
+      I18n.t("user.email.required"),
+      "blank email shows required message when validation is forced"
+    );
+
+    const testInvalidEmail = (email) => {
+      component.set("model.accountEmail", email);
+      assert.true(
+        component.emailValidation.failed,
+        `email should be invalid: ${email}`
+      );
+      assert.strictEqual(
+        component.emailValidation.reason,
+        I18n.t("user.email.invalid"),
+        `email validation reason: ${email}`
+      );
+    };
+
+    testInvalidEmail("pork");
+    testInvalidEmail("pork@");
+    testInvalidEmail("pork@chops");
+    testInvalidEmail("@chops.com");
+    testInvalidEmail("pork chops@chops.com");
+
+    const testValidEmail = (email) => {
+      component.set("model.accountEmail", email);
+      assert.true(
+        component.emailValidation.ok,
+        `email should be valid: ${email}`
+      );
+      assert.strictEqual(
+        component.emailValidation.reason,
+        I18n.t("user.email.ok"),
+        `email validation reason: ${email}`
+      );
+    };
+
+    testValidEmail("pork@chops.com");
+    testValidEmail("  pork@chops.com  ");
+
+    component.set("rejectedEmails", ["pork@chops.com"]);
+    testInvalidEmail("pork@chops.com");
+
+    await settled();
+  });
+
   test("authProviderDisplayName", function (assert) {
     const component = this.owner
       .factoryFor("component:modal/create-account")
